@@ -1,3 +1,5 @@
+
+
 # OpenROAD Flow
 
 [![Build Status](https://jenkins.openroad.tools/buildStatus/icon?job=OpenROAD-flow-scripts-Public%2Fpublic_tests_all%2Fmaster)](https://jenkins.openroad.tools/view/Public/job/OpenROAD-flow-scripts-Public/job/public_tests_all/job/master/)
@@ -46,6 +48,65 @@ A copy of this paper is available
 [here](https://vlsicad.ucsd.edu/Publications/Conferences/371/c371.pdf) (PDF).
 
 If you like the tools, please give us a star on our GitHub repos!
+
+# Proposed Changes in TritonRoute.tcl code
+
+```
+** Original Code **
+TritionRoute. tcl file codes
+
+if { [info exists flags(-distributed)] } {
+  if { [info exists keys(-remote_host)] } {
+    set rhost $keys(-remote_host)
+  } else {
+    utl::error DRT 506 "-remote_host is required for distributed routing."
+  }
+  if { [info exists keys(-remote_port)] } {
+    set rport $keys(-remote_port)
+  } else {
+    utl::error DRT 507 "-remote_port is required for distributed routing."
+  }
+  if { [info exists keys(-shared_volume)] } {
+    set vol $keys(-shared_volume)
+  } else {
+    utl::error DRT 508 "-shared_volume is required for distributed routing."
+  }
+  if { [info exists keys(-cloud_size)] } {
+    set cloudsz $keys(-cloud_size)
+  } else {
+    utl::error DRT 516 "-cloud_size is required for distributed routing."
+  }
+  drt::detailed_route_distributed $rhost $rport $vol $cloudsz
+}
+
+```
+# values with original code
+![<img width="398" alt="result" src="https://user-images.githubusercontent.com/100422485/229189740-08751d36-a33a-4f1f-b8d5-3d186785e6bd.PNG">]
+
+
+# Code replacing original code 
+
+```
+if {[info exists flags(-distributed)]} {
+  set required_args [list -remote_host -remote_port -shared_volume -cloud_size]
+  foreach arg $required_args {
+    if {![info exists keys($arg)]} {
+      utl::error DRT [lindex {506 507 508 516} [lsearch $required_args $arg]] "$arg is required for distributed routing."
+    }
+  }
+  set rhost $keys(-remote_host)
+  set rport $keys(-remote_port)
+  set vol $keys(-shared_volume)
+  set cloudsz $keys(-cloud_size)
+  drt::detailed_route_distributed $rhost $rport $vol $cloudsz
+}
+```
+# values with modification
+<img width="811" alt="result1" src="https://user-images.githubusercontent.com/100422485/229189752-38bbf00e-fe82-44f5-8767-a93f58cc65de.PNG">
+
+# Conclusion
+
+The following modification reduced the peak memory by good value i.e from  323720 kB to 180696kB.
 
 ## License
 
